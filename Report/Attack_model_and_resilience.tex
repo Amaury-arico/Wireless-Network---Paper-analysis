@@ -1,0 +1,160 @@
+\chapter{Attack model and protocol resilience}
+
+The section focuses on the resilience of the key generation protocol discussed during the previous chapters.  Our attacker, Eve, is assumed to be a passive eavesdropper for both communication architechtures. For each scenario, we will discuss the level of information Eve can extract from her observations and derive the upper bound on the probability to have a successful eavesdropper attack. While mathematical developments in this paragraph rely on information theory tools such as conditional entropy and mutual information, our objective is not to reproduce the paper detailed mathematical derivations but rather provides a intuitive interpretation of those. In particular, we will emphasize how the information leakage securities (quantization, channel decorrelation and the privacy amplification) take parts in the probability upper bound calculation.
+
+\section{Mutual information}
+
+We first need to look into the signal seen by Eve to grasp the potential danger.  The equation ~\ref{Eve_signal} expands mathematically the signal as combination of element-wise multiplication.
+
+\begin{align}
+w_{i,\mathrm{ed},1} &= s_i \circ v_i \circ h_{i,\mathrm{ae}} + n_{i,\mathrm{ae}},\\
+w_{i,\mathrm{ed},2} &= s_i \circ v_i \circ h_{i,\mathrm{be}} + n_{i,\mathrm{be}}.
+\label{Eve_signal}
+\end{align}
+
+One can understand that the observation being successful will depend entirely on the correlation between the channel $h_{i,\mathrm{ae}}$ and $h_{i,\mathrm{ab}}$ or between the channel $h_{i,\mathrm{be}}$ and $h_{i,\mathrm{ab}}$.\\
+We discussed previously about the spatial correlation of the channel and the reciprocity properties between the channel observed by the sender and the receiver.  It would be interesting to quantify the correlation between the channel seen by our attacker Eve and Bob-Alice|Alice-Bob channel as it intervenes in the probability computation of leaked information seen from Eve side.\\
+From channel communication course, we know that the magnitude of a channel observed at distance d, can be built as a statistical model realisation (from Rice or Rayleigh pdf model).  The spatial correlation between two channels realisation considering small scale fading can be expressed as a Bessel function.  Mathematically it boils down to the equation ~\ref{eq:bessel_fading}.
+
+\begin{equation}
+J_0(k d) \approx
+\begin{cases}
+1, & d \ll \lambda, \\[6pt]
+0, & d \approx 0.38\,\lambda, \\[6pt]
+\text{oscillatory decay}, & d > \lambda .
+\end{cases}
+\label{eq:bessel_fading}
+\end{equation}
+
+Intuitively, this result shows that the wireless channels observed by two receivers separated by more than approximately half a wavelength (general rule of thumb) are weakly correlated. As a consequence, an eavesdropper located at such a distance experiences an essentially independent channel realization.  This spatial decorrelation, confirming the channel randomness seen by a sufficient distant observer, is the fundamental property exploited for physical layer key generation.
+
+We also know that channel coefficients are complex numbers.  From the statistical models, channel can be therefore decomposed in an imaginary sub-channel and real sub-channel independently and identically distributed as $\mathcal{N} (0,\sigma^2)$.  From  ~\ref{eq:bessel_correlation}, the real and imaginary parts of Bob|Alice and Eve are correlated with $\rho$.
+
+\begin{equation}
+\rho = [ J_0(k d)] ^2
+\label{eq:bessel_correlation}
+\end{equation}
+
+From the channel correlation and the channel model distrubition, we can build the covariance matrices of both channels, $h_{\mathrm{ae}}$ and $h_{\mathrm{ab}}$ and the covariance matrice from joint channel ($h_{\mathrm{ae}}$,$h_{\mathrm{ab}}$), the former being used to calculate the mutual information in equation ~\ref{covariance_bob}.
+
+\begin{equation}
+\mathbf{C}_{\text{Bob}} =
+    \begin{pmatrix}
+    \dfrac{\sigma^2_{\text{b}}}{2} & 0\\[6pt]
+    0 & \dfrac{\sigma^2_{\text{b}}}{2}
+    \end{pmatrix}
+\label{covariance_bob}
+\end{equation}
+
+\begin{equation}
+\mathbf{C}_{\text{Eve}} =
+    \begin{pmatrix}
+    \dfrac{\sigma^2_{\text{e}}}{2} & 0\\[6pt]
+    0 & \dfrac{\sigma^2_{\text{e}}}{2}
+    \end{pmatrix}
+\label{covariance_eve}
+\end{equation}
+
+\begin{equation}
+\mathbf{C}_{\text{Joint}} =
+    \begin{pmatrix}
+    \dfrac{\sigma^2_{\text{b}}}{2} & 0 & \dfrac{\rho\sigma_{\text{b}}\sigma_{\text{e}}}{2} & 0\\[6pt]
+    0 & \dfrac{\sigma^2_{\text{b}}}{2} & 0 & \dfrac{\rho\sigma_{\text{b}}\sigma_{\text{e}}}{2}\\[6pt]
+    \dfrac{\rho\sigma_{\text{b}}\sigma_{\text{e}}}{2} & 0 & \dfrac{\sigma^2_{\text{e}}}{2} & 0\\[6pt]
+    0 & \dfrac{\rho\sigma_{\text{b}}\sigma_{\text{e}}}{2} & 0 & \dfrac{\sigma^2_{\text{e}}}{2}
+    \end{pmatrix}
+\label{covariance_joint}
+\end{equation}
+
+The mutual information, denoted $I(h_{\mathrm{ae}},h_{\mathrm{ab}})$, can be expressed through the conditional entropy development in equation \ref{conditional_entropy}
+
+\begin{equation}
+I(h_{\mathrm{ae}},h_{i,\mathrm{ab}}) = H(h_{\mathrm{ae}}) + H(h_{\mathrm{ab}}) - H(h_{\mathrm{ab}},h_{\mathrm{ae}})
+\label{conditional_entropy}
+\end{equation}
+
+Where the entropies exhibit the level of randomness or uncertainty inherent to the channels.\\
+By expressing the entropies as multivariate gaussian distrubition, the mutual information results into the expression ~\ref{mutual_info}.
+
+\begin{align}
+I(h_{\mathrm{ae}},h_{i,\mathrm{ab}}) &= H(h_{\mathrm{ae}}) + H(h_{\mathrm{ab}}) - H(h_{\mathrm{ab}},h_{\mathrm{ae}}),\\
+&= \frac{1}{2}\log\!\bigl(\det(2\pi e\,\mathbf{C}_1)\bigr) + \frac{1}{2}\log\!\bigl(\det(2\pi e\,\mathbf{C}_2)\bigr) - \frac{1}{2}\log\!\bigl(\det(2\pi e\,\mathbf{C}_3)\bigr),\\
+&= \log\!\bigl(\pi e\sigma^2_\text{b}\bigr) + \log\!\bigl(\pi e\sigma^2_\text{e}\bigr) - \log\!\bigl((\pi e\sigma_\text{b}\sigma_\text{e})^2(1-\rho^2)\bigr),\\
+&= - \log\!(1-\rho^2)
+\label{mutual_info}
+\end{align}
+
+The final equality convey that the level of information leakage does depend exclusively of the spatial correlation between the attacker channel and the communication channel, and therefore independent of the absolute channel power or, in other words, independent of the signal to noise ratio.
+
+\section{Upper bound probability of successfull attacks}
+
+The mutual information defined, we have all the tools to compute the upper bound probability of successfull attacks.  For that, we must compute each increase of probability generated by the implemented security processes, namely the quantization process, the channel spatial correlation and the privacy amplification process. In a first time, we will consider the direct communication architecture and afterwards compute the upper bound for the communication through untrustred relay.
+
+\subsection{Direct communication}
+
+the probability of a successful Eve's eavesdropping attack is upper bounded as stated by the equation ~\ref{Upper_bound_direc}.
+
+\begin{equation}
+    Pr(success) < (2^{-2\delta} + \sqrt{2I(h_b,h_e)})^N + 2^{-N\delta}.
+    \label{Upper_bound_direc}
+\end{equation}
+
+With :
+
+\begin{enumerate}
+    \item $2^{-2\delta}$ term providing the probability of successfull guess of the binary representation after quantization.  The factor $2$ coming from the imaginary and real channel coefficient decomposition.
+    \item $\sqrt{2I(h_b,h_e)}$ increasing the probability of recovering the right bits given Eve's observation from her own channel.
+    \item the exponent $N$ being the OFDM subcarriers number, each carrier seeing a narrowband flat channel.
+    \item $2^{-N\delta}$ term raising the upper bound due to the additional guess of the key generation during the privacy amplification process.
+\end{enumerate}
+
+It is worth mentioning that the privacy amplification increases the upper bound probability of successfull attack but removes the information leaked during the code-secure sketch process.
+
+\subsection{Communication through untrusted relay}
+
+As a remainder, in this communication architecture, the relay, Carol, is sending back the received signal amplified by a public factor $\alpha$.  The attacker, Eve, has access to \textbf{two} signals shwon in the equations  ~\ref{eq:eve_obs1} and ~\ref{eq:eve_obs2}.
+
+\begin{align}
+w_{i,\mathrm{e},1} &= s_i \circ h_{i,\mathrm{ae}} + v_i \circ g_{i,\mathrm{be}} + n_{i,\mathrm{e}1}, \label{eq:eve_obs1} \\[4pt]
+e_{i,3} &= \alpha \bigl( s_i \circ h_i + v_i \circ g_i + n_{i,2,\mathrm{r}} \bigr)
+\circ f_{i,\mathrm{ce}} + n_{i,\mathrm{e}2}.
+\label{eq:eve_obs2}
+\end{align}
+
+From the OFDM preambles symbols, the channel $f_{i,\mathrm{ce}}$ can be estimated leading to the recovery of the signal $w_{i,\mathrm{e},2}$ in ~\ref{eq:eve_obs3}.
+
+\begin{equation}
+    w_{i,\mathrm{e},2} = s_i \circ h_i + v_i \circ g_i + n_{i,2,\mathrm{r}}
+    \label{eq:eve_obs3}
+\end{equation}
+
+The spatial correlation property of the channel is, in this case, not providing the same security against the eavesdropper attack as the direct communication.  The reason is Eve can virtually be considered as having access to the same level of information as the relay.  This comes from the fact that the signal $w_{i,\mathrm{e},2}$ can be retrieved completely.
+The mutual information contains in $I(w_{\mathrm{i},ab};w_{i,\mathrm{e},1},w_{i,\mathrm{e},2})$ is much more significant than in the \textit{section 4.2.1}.As such, the upper bound cannot be express from the equation ~\ref{Upper_bound_direc} as saturating to $1$ and thus not giving relevant information about the level of security for the relay architecture.  Therefore, the idea is to pass by the Fano'sequality developed in the equation ~\ref{eq:fano_correct}.
+
+\begin{align}
+    \Pr(C_N)
+    &\le
+    \bigl(
+    1 -
+    \frac{H(q_a \mid w_{i,\mathrm{e},1},w_{i,\mathrm{e},2}) - 1}{\log_2 \lvert \mathcal{Q}_A \rvert}\bigr)^N, \\[6pt]
+    \label{eq:fano_correct}
+    \Pr(C_N)
+    &\le
+    \bigl(
+    1 -
+    \frac{H(q_a) - I(w_{\mathrm{i},ab};w_{i,\mathrm{e},1},w_{i,\mathrm{e},2}) -1 }{\log_2 \lvert \mathcal{Q}_A \rvert}\bigr)^N.
+\end{align}
+
+If the attacker, Eve, cannot deduce the key during the communication session, the remaining probability to rightly guess the hashed key is equal to $2^{-N\delta}$.The total upper bound probability is therefore stated in the equation ~\ref{eq:upper_bound_relay}.
+
+\begin{equation}
+    \Pr(C_N)
+    \le
+    \bigl(
+    1 -
+    \frac{H(q_a) - I(w_{\mathrm{i},ab};w_{i,\mathrm{e},1},w_{i,\mathrm{e},2}) -1 }{\log_2 \lvert \mathcal{Q}_A \rvert}\bigr)^N + 2^{-N\delta}.
+    \label{eq:upper_bound_relay}
+\end{equation}
+
+
+

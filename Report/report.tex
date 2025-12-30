@@ -1,0 +1,73 @@
+\documentclass[10pt,a4paper]{ULBreport}
+\usepackage[utf8]{inputenc}
+\sceau{pic/official_logos/sceauULB.png}
+\graphicspath{ {./pic/} }
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{color} 
+\usepackage{setspace} 
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\usepackage{biblatex}
+%\usepackage{floatrow}
+\usepackage{subcaption} 
+\usepackage{siunitx}
+\usepackage[many]{tcolorbox}
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{fancyvrb}
+\usepackage{booktabs}
+
+\usepackage{xstring}
+\usepackage{etoolbox}
+
+% Colors
+
+\definecolor{darkerGreen}{HTML}{53850d}
+
+% BOXES FOR QUESTIONS
+
+\newtcolorbox{Task}[2][]{
+    fontupper=\bf,
+    boxrule=1.5pt,
+    colframe= black, % frame color
+    fonttitle=\itshape,
+    attach boxed title to top left={yshift=-0.3\baselineskip-0.4pt,xshift=2mm},
+    title= #2,#1,
+    enhanced,
+    }
+
+\begin{document} 
+
+	\titleULB{
+	title={Research paper analysis},
+    studies={IRELE},
+    course ={Mobile and wireless networks},
+    author={\textit{Authors:} \\ Arico Amaury \\ Mototani Yuta \\ Tchakounte Loic \\ Sipakam Cedric},
+    date={\textbf{Academic year:} \\ 2025 - 2026},
+    teacher={\textit{Professor: } \\ Dricot Jean-Michel\\ \textit{TA: } \\Ladner Navid},
+    logo={pic/official_logos/logos.jpg},
+    manyAuthor
+	}
+
+%\listoftables % ToC for tables
+\listoffigures % ToC for figures
+
+\include{Introduction.tex}
+\include{System_model.tex}
+\include{Proposed_protocols.tex}
+\include{Attack_model_and_resilience.tex}
+\include{Result.tex}
+\include{AI_discussion.tex}
+\include{conclusion.tex}
+
+%\printglossary
+
+%\printglossary[type=\acronymtype]
+
+%Bibliography
+%\nocite{*}
+%\printbibliography[type=article,title=Articles]
+
+\end{document}	

@@ -1,0 +1,66 @@
+\chapter{Results and discussion}
+
+The results section focuses on the bit generation rate (BGR) and the bit mismatch rate (BMR), as these metrics enable a direct comparison between the proposed algorithm and existing secret key generation protocols but also state the protocol limitations in real conditions.  
+We will conclude by a critical analysis of the protocol and its limitations.  
+
+The research paper compares the results obtained by three different scenarii. For all the sceanrii, the channel used OFDM parallel transmission with 16 subcarriers and QAM symbols, the quantization after transmission is fixed at $\delta = 2$.  The first scenario is a direct reciprocal channel communication. The second is a non light of side channel with realistic 5G mmWave channels coefficients (from the NYUSIM network simulator) in urban micro-cellular environment operating in $28$ GHz with very low outdoor-indoor loss and Eve distant of 10 meters from Bob and Alice. The last one is relay-based architecture with only direct communication with the relay.
+
+\section{Bits generation rate}
+For all the scenarii, in the current modulation,  quantization configuration and bandwidth division, the bit generation rate adds up to 64 bits/OFDM symbol.  The paper mentions \textbf{64 bits/packet} expressing that the transmitted QAM symbols are average over all the OFDM symbols ensuring a minimization of the noise, optimizing the BMR per communication session.  The key is generated after 4 sessions, current transmitted bits being added modulo 2 with the previous one to enhance secrecy (relevant for NLOS inside communication - scenario 2).  Regarding the performance, the paper protocol achieves comparable level of bits generation rate as protocols developed for dynamic environment.  For static environment, previous protocols could generate between 0.5 bit per packet to 8 bits per packet.\\  For completeness, we suppose we want to generate a 128 bits secret key for the current 5G wireless network.  For communication operating at $28$GHz, we find $14$ OFDM symbols per packet.  Assuming a subcarrier spacing of $120$ KHz, a 128 bits secret key can be established in few milliseconds, as shown in the equation ~\ref{eq:t128}. Thus, the key generation timing is equivalent to computation of key encryption methods such as RSA or handshaking methods and well within the timing constraint for 5G New Radio communication. 
+
+\begin{align}
+T_{\text{sym}} 
+&= \frac{1}{\Delta f}
+ = \frac{1}{120\,\text{kHz}}
+ \approx 8.33~\mu\text{s}, 
+ \label{eq:tsym} \\[6pt]
+T_{\text{sym}}^{\text{(CP)}} 
+&\approx 9~\mu\text{s} \quad \quad\quad\quad \quad \text{\textbf{with cycle prefix}},
+ \label{eq:tsym_cp} \\[6pt]
+T_{\text{slot}} 
+&= 14 \times T_{\text{sym}}^{\text{(CP)}}
+ \approx 14 \times 9~\mu\text{s}
+ = 126~\mu\text{s},
+ \label{eq:tslot} \\[6pt]
+T_{32\text{-bits}} 
+&= 4 \times T_{\text{slot}}
+ \approx 4 \times 126~\mu\text{s}
+ \approx 0.5~\text{ms},
+ \label{eq:t32} \\[6pt]
+T_{128\text{-bits}} 
+&= 4 \times T_{32\text{-bit}}
+ \approx 2~\text{ms}.
+ \label{eq:t128}
+\end{align}
+
+\section{Bits mismatch rate}
+
+The figure \ref{BMR} illustrates the results for bits mismatch rate between Alice and Eve and compares it with the BMR between Alice and Bob.  The comparison spans all the three setups.  As remainder, the bits mismatch rate is the ratio between the computed quantized bits after transmission and the corresponding true quantized bits.  We can observe that the BMR between Alice and Bob decreases with the SNR, while the BMR between Alice and Eve exhibits a very slow reduction behaviour and converges to a \textit{plateau}.  Nevertheless, the second scenario BMR between Alice and Eve is significantly lower than the other setups, decreasing in the SNR range from $5$ to $15$ dB before also reaching a \textit{plateau}.\\  This moderate BMR in the indoor NLOS communication is attributed to sparse, or clustered scattering of the signal. The spatial correlation model of the physical channel rests on the assumption of infinite amount of multipath components (MPC) or scatters resulting to Rayleigh or Rice fading statistics.  In 5GNR communication, the scatters are characterized by limited diffusion and dominant reflections, resulting to a small number of dominant paths.  Under these sparse scattering conditions, the probability that Eve observes the same cluster of scatters as Alice and Bob is significantly higher than in the idealized case of infinite MPCs environment, and thus explaining the low BMR for this scenario.\\
+Nevertheless, even for the NLOS communication, the BER between Alice and Eve converges to $50\%$ after privacy amplification, thereby confirming the security robustness of the proposed protocol - Figure \ref{BER}.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../pic/Bits_mismatch_rate.PNG}
+        \caption{Bits mismatch rate - all setups comparison.}
+        \label{BMR}
+    \end{minipage}
+    \hspace{0.04\textwidth}
+    \begin{minipage}{0.4\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{../pic/Bits_error_rate.PNG}
+        \caption{Bits mismatch rate - all setups comparison.}
+        \label{BER}
+    \end{minipage}
+\end{figure}
+
+\section{Limitations}
+
+The weakness of the proposed protocol relies on key assumptions resulting to potential limitations in case of protocol deployement.
+
+\begin{enumerate}
+    \item \textbf{Passive eavesdropper attack : }The protocol assumes a passive eavesdropper attacker, not interfering with the communication between Alice and Bob.  In case of active attacks from Eve, such as jamming, the correlation is degraded, preventing Alice and Bob from reliable recovery of the introduced randomness from both parties.
+    \item \textbf{Channel stability : }The key generation process has been proved to be robust in static environment and remains valid for slow varying channels as long as the time coherence of the channel exceeds the key  generation time. However, if the time needed to process the secret key is longer than the channel stability duration, the observations of Alice and Bob decorrelate, resulting to an increase of the BMR and potential key generation failure.
+    \item \textbf{Hardware synchronisation : }The protocol assumes a good synchronisation of Alice's and Bob's hardwares.  Imperfect syncrhonisation may require concession on quantization resolution or on the rate of error-correcting code should be made ensuring successfull correlation and key derivation.
+\end{enumerate}
